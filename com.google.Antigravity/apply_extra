@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd /app/extra
+
+# Unpack inside /app/extra rather than /tmp: the payload is ~500 MB, and
+# keeping the work dir on the destination filesystem makes the final step a
+# rename instead of a second full-size copy.
+work_dir=/app/extra/.unpack
+trap 'rm -rf "$work_dir"' EXIT
+rm -rf "$work_dir"
+mkdir -p "$work_dir"
+
+# Only one of these is present: the manifest pins each to its architecture
+# with only-arches. The ELF e_machine each must carry is checked below.
+deb=""
+for candidate in antigravity-x64.deb antigravity-arm64.deb; do
+  if [ -f "$candidate" ]; then
+    deb="$candidate"
+    break
+  fi
+done
+
+case "$deb" in
+  antigravity-x64.deb) machine=62 ;;    # EM_X86_64
+  antigravity-arm64.deb) machine=183 ;; # EM_AARCH64
+  *)
+    echo "Antigravity .deb not found in /app/extra" >&2
+    exit 1
+    ;;
+esac
+
+# bsdtar reads the .deb's ar container directly and streams the data member
+# into a second bsdtar, which detects its compression itself, so the unpacked
+# tarball never lands on disk.
+bsdtar -xOf "$deb" 'data.tar*' | bsdtar -xf - -C "$work_dir" ./opt/Antigravity
+
+payload="$work_dir/opt/Antigravity"
+
+is_elf() {
+  [ "$(head -c 4 "$1" | od -An -tx1 | tr -d ' \n')" = "7f454c46" ]
+}
+
+# e_machine is the little-endian u16 at offset 18. A swapped pair of sources
+# would otherwise install one architecture's binaries into the other's
+# Flatpak, and nothing would fail until the app was launched.
+elf_machine() {
+  od -An -tu2 -j18 -N2 --endian=little "$1" | tr -d ' \n'
+}
+
+for file in \
+  "$payload/antigravity" \
+  "$payload/resources/bin/language_server" \
+  "$payload/resources/bin/webm_encoder"
+do
+  if [ ! -f "$file" ] || ! is_elf "$file"; then
+    echo "Required Linux ELF is missing from $deb: ${file#"$payload/"}" >&2
+    exit 1
+  fi
+  if [ "$(elf_machine "$file")" != "$machine" ]; then
+    echo "${file#"$payload/"} in $deb is not built for this architecture" >&2
+    exit 1
+  fi
+done
+
+if [ ! -f "$payload/resources/app.asar" ]; then
+  echo "app.asar not found in $deb" >&2
+  exit 1
+fi
+
+# Updates come through Flatpak. With package-type naming "deb", the bundled
+# electron-updater would download every new .deb and try to install it with
+# pkexec. Without it, electron-updater falls back to its AppImage updater,
+# which stays inactive when $APPIMAGE is unset.
+rm -f "$payload/resources/package-type"
+# Only meaningful to the .deb's own postinst on the host.
+rm -f "$payload/resources/apparmor-profile"
+
+# Zypak provides Chromium's sandbox inside Flatpak, and Chromium aborts if it
+# finds a chrome-sandbox helper next to the binary without the setuid bit.
+rm -f "$payload/chrome-sandbox"
+
+chmod -R a+rX "$payload"
+
+rm -rf antigravity
+mv "$payload" antigravity
+rm -f antigravity-x64.deb antigravity-arm64.deb
+
+echo "Antigravity extra data installed"

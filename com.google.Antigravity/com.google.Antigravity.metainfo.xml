@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+  <id>com.google.Antigravity</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>LicenseRef-proprietary=https://antigravity.google/terms</project_license>
+  <name>Antigravity</name>
+  <summary>Agentic desktop application</summary>
+  <description>
+    <p>
+      Antigravity is Google's agentic desktop application for planning,
+      running and reviewing coding agents across projects.
+    </p>
+    <p>
+      This is an unofficial Flatpak package. The application itself is
+      downloaded from Google's official release when the Flatpak is installed.
+    </p>
+  </description>
+  <launchable type="desktop-id">com.google.Antigravity.desktop</launchable>
+  <url type="homepage">https://antigravity.google</url>
+  <developer id="com.google">
+    <name>Google</name>
+  </developer>
+  <categories>
+    <category>Development</category>
+  </categories>
+  <content_rating type="oars-1.1"/>
+  <releases>
+  </releases>
+</component>

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "platformAutomerge": false,
+  "packageRules": [
+    {
+      "description": "Antigravity",
+      "groupName": "antigravity",
+      "matchPackageNames": ["antigravity"],
+      "automerge": true
+    },
+    {
+      "description": "freedesktop runtime and Electron BaseApp. Held for approval on the Dependency Dashboard: the com.visualstudio.code.tool and node24 extension versions in the manifest have to move with it by hand, and the VS Code tool extensions are only published up to 25.08.",
+      "matchPackageNames": ["org.freedesktop.Sdk"],
+      "dependencyDashboardApproval": true
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Antigravity .deb release paths. Renovate only knows the version, not the build id after it; post-renovate rewrites both URLs from the update feed.",
+      "managerFilePatterns": [
+        "/\\/com\\.google\\.Antigravity\\.yaml$/"
+      ],
+      "matchStrings": [
+        "url: https://storage\\.googleapis\\.com/antigravity-public/antigravity-hub/(?<currentValue>[\\d.]+)-\\d+/linux-(?:x64|arm)/Antigravity\\.deb"
+      ],
+      "depNameTemplate": "antigravity",
+      "datasourceTemplate": "custom.antigravity-feed",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "description": "freedesktop-sdk runtime and Electron BaseApp version (manifest and CI image)",
+      "managerFilePatterns": [
+        "/\\/com\\.google\\.Antigravity\\.yaml$/",
+        "/\\.github\\/workflows\\/flatpak-build\\.yaml$/"
+      ],
+      "matchStrings": [
+        "runtime-version: \"(?<currentValue>[\\d.]+)\"",
+        "base-version: \"(?<currentValue>[\\d.]+)\"",
+        "image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-(?<currentValue>[\\d.]+)"
+      ],
+      "depNameTemplate": "org.freedesktop.Sdk",
+      "datasourceTemplate": "custom.flathub-runtime",
+      "versioningTemplate": "loose"
+    }
+  ],
+  "customDatasources": {
+    "antigravity-feed": {
+      "defaultRegistryUrlTemplate": "https://antigravity-hub-auto-updater-974169037036.us-central1.run.app/manifest/latest-x64-linux.yml",
+      "format": "yaml",
+      "transformTemplates": [
+        "{ \"releases\": [ { \"version\": version } ] }"
+      ]
+    },
+    "flathub-runtime": {
+      "defaultRegistryUrlTemplate": "https://flathub.org/api/v2/runtimes",
+      "format": "json",
+      "transformTemplates": [
+        "{ \"releases\": $each($$, function($v, $k) { $k })[$contains(\"org.freedesktop.Sdk/x86_64/\")] ~> $map(function($k) { { \"version\": $split($k, \"/\")[2] } }) }"
+      ]
+    }
+  }
+}

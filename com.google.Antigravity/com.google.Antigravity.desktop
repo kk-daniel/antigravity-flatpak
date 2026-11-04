@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Antigravity
+Comment=Agentic desktop application
+Exec=antigravity %U
+Icon=com.google.Antigravity
+Type=Application
+Terminal=false
+Categories=Development;
+MimeType=x-scheme-handler/antigravity;
+StartupWMClass=Antigravity

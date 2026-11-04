@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Antigravity URL Handler
+Comment=Handle Antigravity sign-in links
+Exec=antigravity %U
+Icon=com.google.Antigravity
+Type=Application
+Terminal=false
+NoDisplay=true
+MimeType=x-scheme-handler/antigravity;

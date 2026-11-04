@@ -1,0 +1,18 @@
+# Flatpak repository
+/repo
+/test-repo
+/flathub
+
+# Build directories
+.flatpak-builder
+/build
+/builddir
+
+# Flatpak bundles
+*.flatpak
+
+# Temporary files
+*.tmp
+
+# Python bytecode from the checksum updater
+__pycache__/

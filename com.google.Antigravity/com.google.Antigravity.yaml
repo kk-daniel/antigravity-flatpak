@@ -1,0 +1,107 @@
+app-id: com.google.Antigravity
+# Antigravity's agent runs developer tools and SDK extensions inside the
+# sandbox, so use the SDK as the runtime rather than limiting the app to the
+# Platform surface.
+runtime: org.freedesktop.Sdk
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+base: org.electronjs.Electron2.BaseApp
+base-version: "25.08"
+command: antigravity
+tags: [proprietary]
+separate-locales: false
+add-extensions:
+  com.visualstudio.code.tool:
+    directory: tools
+    subdirectories: true
+    version: '25.08'
+    add-ld-path: lib
+    no-autodownload: true
+    autodelete: false
+  org.freedesktop.Sdk.Extension.node24:
+    directory: lib/sdk/node24
+    version: '25.08'
+    add-ld-path: lib
+    no-autodownload: false
+    autodelete: false
+finish-args:
+  - --require-version=0.10.3
+  - --share=network
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --env=XCURSOR_PATH=/run/host/user-share/icons:/run/host/share/icons
+  - --env=ELECTRON_OZONE_PLATFORM_HINT=wayland
+  # Sandbox-private ~/.gemini: Antigravity's config, MCP servers, plugins,
+  # skills and workflows. Stored on the host at
+  # ~/.var/app/com.google.Antigravity/.gemini and not shared with a
+  # host-installed Gemini CLI or Antigravity.
+  - --persist=.gemini
+  # Deliberately absent: --talk-name=org.freedesktop.secrets. Secret Service
+  # has no per-application isolation; README documents the optional override.
+  - --talk-name=org.freedesktop.Notifications
+  # Notification-area / tray (StatusNotifierItem on KDE & GNOME-via-extension,
+  # AppIndicator on Ubuntu/Cinnamon). Without these the SNI registration
+  # silently fails under Flatpak and no icon appears.
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --talk-name=com.canonical.AppMenu.Registrar
+  - --talk-name=com.canonical.AppMenu.Registrar.*
+  - --talk-name=com.canonical.indicator.application
+  # libappindicator claims a per-PID bus name under
+  # com.canonical.indicator.application; without ownership, the
+  # registration call to the watcher silently no-ops.
+  - --own-name=com.canonical.indicator.application.*
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - /share/gtk-doc
+  - '*.la'
+modules:
+  - name: antigravity
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 antigravity.sh /app/bin/antigravity
+      - install -Dm755 apply_extra /app/bin/apply_extra
+      - install -Dm644 ${FLATPAK_ID}.metainfo.xml -t /app/share/metainfo
+      - install -Dm644 ${FLATPAK_ID}.desktop -t /app/share/applications
+      - install -Dm644 ${FLATPAK_ID}-url-handler.desktop -t /app/share/applications
+      - install -Dm644 ${FLATPAK_ID}.png /app/share/icons/hicolor/512x512/apps/${FLATPAK_ID}.png
+      - mkdir -p /app/extra/antigravity
+      - mkdir -p /app/lib/sdk/node24
+      - mkdir -p /app/tools
+      - ln -s /app/lib/sdk/node24/bin/node /app/bin/node
+      - ln -s /app/lib/sdk/node24/bin/npm /app/bin/npm
+      - ln -s /app/lib/sdk/node24/bin/npx /app/bin/npx
+      - ln -s /app/lib/sdk/node24/bin/corepack /app/bin/corepack
+    sources:
+      # Google's official Linux build of the Antigravity app, the .deb its own
+      # electron-updater feed publishes. The URLs carry version and build id;
+      # update-feed-metadata.py checks each download against the feed's
+      # sha512 and size, and writes url, sha256 and size here.
+      # https://antigravity-hub-auto-updater-974169037036.us-central1.run.app/manifest/latest-x64-linux.yml
+      - type: extra-data
+        filename: antigravity-x64.deb
+        only-arches: [x86_64]
+        url: https://storage.googleapis.com/antigravity-public/antigravity-hub/2.29.0-5723181030440960/linux-x64/Antigravity.deb
+        sha256: 7cb6d391c094e0d95df543509f95f8e3d0dbf245c5969dca26fd06b069702e25
+        size: 155040580
+      # https://antigravity-hub-auto-updater-974169037036.us-central1.run.app/manifest/latest-arm64-linux-arm64.yml
+      - type: extra-data
+        filename: antigravity-arm64.deb
+        only-arches: [aarch64]
+        url: https://storage.googleapis.com/antigravity-public/antigravity-hub/2.29.0-5723181030440960/linux-arm/Antigravity.deb
+        sha256: 102c2ddf216a920b070c9960b5a85719a40fbe8a0337eac5b5b88c6ece0666d8
+        size: 145700388
+      - type: file
+        path: apply_extra
+      - type: file
+        path: antigravity.sh
+      - type: file
+        path: com.google.Antigravity.metainfo.xml
+      - type: file
+        path: com.google.Antigravity.desktop
+      - type: file
+        path: com.google.Antigravity-url-handler.desktop
+      - type: file
+        path: com.google.Antigravity.png

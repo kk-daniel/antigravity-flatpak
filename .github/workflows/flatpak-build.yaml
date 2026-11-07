@@ -281,7 +281,7 @@ jobs:
           [ "$fail" -eq 0 ] && echo "Payload layout OK"
           exit "$fail"
       - name: Upload bundle
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ env.APP_ID }}-${{ matrix.arch }}.flatpak
           path: ${{ env.APP_ID }}-${{ matrix.arch }}.flatpak
@@ -293,7 +293,7 @@ jobs:
           ARCH: ${{ matrix.arch }}
         run: tar -cf "repo-${ARCH}.tar" repo
       - name: Upload OSTree repo
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: repo-${{ matrix.arch }}
           path: repo-${{ matrix.arch }}.tar
@@ -408,7 +408,7 @@ jobs:
           EOF
       - name: Upload repository as artifact (tags only)
         if: github.ref_type == 'tag'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: flatpak-repo
           path: repo/

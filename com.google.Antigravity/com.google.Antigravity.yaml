@@ -83,14 +83,14 @@ modules:
       - type: extra-data
         filename: antigravity-x64.deb
         only-arches: [x86_64]
-        url: https://storage.googleapis.com/antigravity-public/antigravity-hub/2.29.0-5723181030440960/linux-x64/Antigravity.deb
+        url: https://storage.googleapis.com/antigravity-public/antigravity-hub/2.36.0-5723181030440960/linux-x64/Antigravity.deb
         sha256: 7cb6d391c094e0d95df543509f95f8e3d0dbf245c5969dca26fd06b069702e25
         size: 155040580
       # https://antigravity-hub-auto-updater-974169037036.us-central1.run.app/manifest/latest-arm64-linux-arm64.yml
       - type: extra-data
         filename: antigravity-arm64.deb
         only-arches: [aarch64]
-        url: https://storage.googleapis.com/antigravity-public/antigravity-hub/2.29.0-5723181030440960/linux-arm/Antigravity.deb
+        url: https://storage.googleapis.com/antigravity-public/antigravity-hub/2.36.0-5723181030440960/linux-arm/Antigravity.deb
         sha256: 102c2ddf216a920b070c9960b5a85719a40fbe8a0337eac5b5b88c6ece0666d8
         size: 145700388
       - type: file
